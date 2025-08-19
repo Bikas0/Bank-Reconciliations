@@ -10,6 +10,7 @@ import uvicorn
 from pdf_to_images import convert_pdf_to_images
 from hug_infer import extract_layout_from_image, extract_layout_from_images_batch
 from config import *
+from table import process_bank_statement_json_to_csv
 
 def process_images_sequentially(image_paths):
     """Process images one by one (fallback method)"""
@@ -24,9 +25,21 @@ def process_images_sequentially(image_paths):
             results[os.path.basename(img_path)] = {"error": str(e)}
     return results
 
+
+def delete_folder(folder_path):
+    try:
+        if os.path.exists(folder_path):
+            shutil.rmtree(folder_path)
+            print(f"Successfully deleted folder and its contents: {folder_path}")
+        else:
+            print(f"Folder does not exist: {folder_path}")
+    except Exception as e:
+        print(f"Error deleting folder {folder_path}: {e}")
+
+
 app = FastAPI(title="PDF → Image → OCR API 🚀")
 
-@app.post("/upload_pdf/")
+@app.post("/upload_pdf")
 async def upload_pdf(file: UploadFile = File(...)):
     """
     Upload a PDF, convert it to images, extract layout via DotsOCR using batch processing,
@@ -89,6 +102,7 @@ async def upload_pdf(file: UploadFile = File(...)):
                 
                 print(f"🔍 [REQUEST-{request_id}] Starting batch processing for {len(image_paths)} images...")
                 results = extract_layout_from_images_batch(image_paths, batch_size=BATCH_SIZE, max_new_tokens=MAX_TOKENS)
+                
                 print(f"🔍 [REQUEST-{request_id}] Batch processing completed. Results count: {len(results)}")
                 
                 print(f"✅ [REQUEST-{request_id}] RTX A5000 EXTREME PERFORMANCE OCR completed for {len(results)} pages")
@@ -133,6 +147,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         # Save results to JSON file
         if SAVE_JSON_FILE:
             try:
+                delete_folder(OUTPUT_DIRECTORY)
                 # Create output directory if it doesn't exist
                 os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
                 
@@ -146,7 +161,7 @@ async def upload_pdf(file: UploadFile = File(...)):
                     json.dump(response_data, json_file, indent=JSON_INDENT, ensure_ascii=False)
                 
                 print(f"💾 [REQUEST-{request_id}] JSON results saved to: {json_path}")
-                
+                process_bank_statement_json_to_csv(OUTPUT_DIRECTORY)
                 # Add file path to response
                 response_data["json_file_path"] = json_path
                 
@@ -160,114 +175,9 @@ async def upload_pdf(file: UploadFile = File(...)):
         return response_data
 
 
-@app.get("/")
+@app.get("/api")
 def root():
     return {"message": "PDF → Image → OCR API is running 🚀"}
-
-@app.get("/config")
-def get_config():
-    """Get current configuration settings optimized for RTX A5000"""
-    return {
-        "rtx_a5000_optimization": {
-            "enabled": ENABLE_BATCH_PROCESSING,
-            "method": "RTX A5000 MAXIMIZED Batch Processing",
-            "batch_size": BATCH_SIZE,
-            "gpu_memory": MAX_GPU_MEMORY,
-            "fallback_to_sequential": FALLBACK_TO_SEQUENTIAL
-        },
-        "model_optimization": {
-            "precision": MODEL_PRECISION,
-            "memory_optimization": ENABLE_MEMORY_OPTIMIZATION,
-            "max_gpu_memory": MAX_GPU_MEMORY,
-            "tf32_enabled": ENABLE_TF32,
-            "cudnn_benchmark": ENABLE_CUDNN_BENCHMARK,
-            "flash_attention": ENABLE_FLASH_ATTENTION
-        },
-        "ocr_settings": {
-            "max_tokens": MAX_TOKENS,
-            "fast_generation": ENABLE_FAST_GENERATION,
-            "mixed_precision": ENABLE_MIXED_PRECISION
-        },
-        "pdf_conversion": {
-            "zoom_factor": PDF_ZOOM,
-            "dpi": PDF_DPI,
-            "output_format": OUTPUT_FORMAT
-        },
-        "performance": {
-            "sort_by_filename": SORT_BY_FILENAME,
-            "max_workers": MAX_WORKERS,
-            "cpu_optimization": ENABLE_CPU_OPTIMIZATION,
-            "memory_pinning": ENABLE_MEMORY_PINNING
-        },
-        "json_output": {
-            "enabled": SAVE_JSON_FILE,
-            "directory": OUTPUT_DIRECTORY,
-            "indent": JSON_INDENT
-        },
-        "rtx_a5000_performance": {
-            "speed_improvement": "8-12x faster than before",
-            "batch_processing": f"Process {BATCH_SIZE} images simultaneously",
-            "memory_optimized": "24GB VRAM fully utilized",
-            "expected_speed": "5-8 seconds per image (vs 70-90s before)"
-        },
-        "message": "RTX A5000 AI acceleration MAXIMIZED for maximum performance"
-    }
-
-@app.get("/files")
-def list_saved_files():
-    """List all saved JSON files in the output directory"""
-    try:
-        if not os.path.exists(OUTPUT_DIRECTORY):
-            return {"message": f"Output directory '{OUTPUT_DIRECTORY}' does not exist", "files": []}
-        
-        files = []
-        for filename in os.listdir(OUTPUT_DIRECTORY):
-            if filename.endswith('.json'):
-                file_path = os.path.join(OUTPUT_DIRECTORY, filename)
-                file_size = os.path.getsize(file_path)
-                files.append({
-                    "filename": filename,
-                    "size_bytes": file_size,
-                    "size_mb": round(file_size / (1024 * 1024), 2)
-                })
-        
-        # Sort files by modification time (newest first)
-        files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIRECTORY, x["filename"])), reverse=True)
-        
-        return {
-            "output_directory": OUTPUT_DIRECTORY,
-            "total_files": len(files),
-            "files": files
-        }
-    except Exception as e:
-        return {"error": f"Could not list files: {str(e)}"}
-
-@app.get("/download/{filename}")
-def download_json_file(filename: str):
-    """Download a specific JSON file by filename"""
-    try:
-        if not filename.endswith('.json'):
-            filename = f"{filename}.json"
-        
-        file_path = os.path.join(OUTPUT_DIRECTORY, filename)
-        
-        if not os.path.exists(file_path):
-            return JSONResponse(
-                {"error": f"File '{filename}' not found"}, 
-                status_code=404
-            )
-        
-        return FileResponse(
-            path=file_path,
-            filename=filename,
-            media_type='application/json'
-        )
-        
-    except Exception as e:
-        return JSONResponse(
-            {"error": f"Could not download file: {str(e)}"}, 
-            status_code=500
-        )
 
 
 # ------------------------------

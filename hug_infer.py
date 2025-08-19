@@ -62,24 +62,57 @@ print(f"   Extreme Mode: ENABLED")
 # -----------------------------
 # Prompt template
 # -----------------------------
-PROMPT = """Please output the layout information from the PDF image, including each layout element's bbox, its category, and the corresponding text content within the bbox.
+# PROMPT = """Please output the layout information from the PDF image, including each layout element's bbox, its category, and the corresponding text content within the bbox.
 
-1. Bbox format: [x1, y1, x2, y2]
+# 1. Bbox format: [x1, y1, x2, y2]
 
-2. Layout Categories: The possible categories are ['Caption', 'Footnote', 'Formula', 'List-item', 'Page-footer', 'Page-header', 'Picture', 'Section-header', 'Table', 'Text', 'Title'].
+# 2. Layout Categories: The possible categories are ['Caption', 'Footnote', 'Formula', 'List-item', 'Page-footer', 'Page-header', 'Picture', 'Section-header', 'Table', 'Text', 'Title'].
 
-3. Text Extraction & Formatting Rules:
-    - Picture: For the 'Picture' category, the text field should be omitted.
-    - Formula: Format its text as LaTeX.
-    - Table: Format its text as HTML.
-    - All Others (Text, Title, etc.): Format their text as Markdown.
+# 3. Text Extraction & Formatting Rules:
+#     - Picture: For the 'Picture' category, the text field should be omitted.
+#     - Formula: Format its text as LaTeX.
+#     - Table: Format its text as HTML.
+#     - All Others (Text, Title, etc.): Format their text as Markdown.
 
-4. Constraints:
-    - The output text must be the original text from the image, with no translation.
-    - All layout elements must be sorted according to human reading order.
+# 4. Constraints:
+#     - The output text must be the original text from the image, with no translation.
+#     - All layout elements must be sorted according to human reading order.
 
-5. Final Output: The entire output must be a single JSON object.
-"""
+# 5. Final Output: The entire output must be a single JSON object.
+# """
+
+PROMPT = """Extract layout information from the given PDF page image(s) and return a SINGLE JSON object containing ONLY the following data:
+
+1. Account Number
+2. Location / Address (branch or company address)
+3. Table data (HTML tables)
+
+CATEGORIES:
+Use layout categories only to help identify content internally, but the final JSON should include only the requested fields.
+
+TEXT FORMATTING RULES:
+- Account Number & Address: Return as plain text. Preserve the original text exactly; do not translate or alter.
+- Table: Wrap all table content in <table> ... </table> HTML. Include only semantic tags (<table>, <thead>, <tbody>, <tr>, <th>, <td>) and preserve the original text and structure.
+
+CONSTRAINTS:
+- Omit all other fields and categories not listed above.
+- The output must be valid JSON, UTF-8 encoded, with no surrounding markdown or code fences.
+- Each page may contain multiple tables; include all in an array under the key "tables".
+- If the PDF contains multiple pages, combine the extracted info into a single JSON object with keys: "account_number", "address", "tables" (tables array).
+
+FINAL OUTPUT EXAMPLE:
+{
+  "account_number": "1101200001113",
+  "address": "Dutch-Bangla Bank PLC, Dhanmondi Branch, 02, Bays Park Height, 09, Dhanmondi, Dhanmondi, Dhaka, Bangladesh",
+  "tables": [
+    "<table>...</table>",
+    "<table>...</table>"
+  ]
+}
+
+Return ONLY the JSON object."""
+
+
 
 # -----------------------------
 # Function to extract layout

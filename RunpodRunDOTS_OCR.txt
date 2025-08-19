@@ -1,0 +1,77 @@
+step 1: 
+
+# 1. Download Miniconda installer
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+
+# 2. Run the installer in batch mode, placing it in ~/miniconda
+bash miniconda.sh -b -p $HOME/miniconda
+
+# 3. Initialize conda for your shell
+$HOME/miniconda/bin/conda init
+
+# 4. Reload your shell to apply changes
+source ~/.bashrc
+
+# 5. Verify conda is installed
+conda --version
+
+Step 2 : 
+
+conda create -n dots_ocr python=3.12
+conda activate dots_ocr
+
+git clone https://github.com/rednote-hilab/dots.ocr.git
+cd dots.ocr
+
+# Install pytorch, see https://pytorch.org/get-started/previous-versions/ for your cuda version
+pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu128
+pip install -e .
+
+
+Step 3:
+
+python3 tools/download_model.py
+
+uvicorn app3:app --host 0.0.0.0 --port 8000
+
+
+Step 4:
+wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
+
+apt install unzip
+tar -xvzf ngrok-v3-stable-linux-amd64.tgz
+mv ngrok /usr/local/bin/
+
+ngrok config add-authtoken 31PRZ0V0LhrAkIeLS9WPwgOdMa2_2rRQjNmtzz4MiSCyfaCXa
+ngrok http 8000
+
+
+
+step 5: 
+# Pinned PyTorch + CUDA 12.8
+torch==2.7.0+cu128
+torchvision==0.22.0+cu128
+torchaudio==2.7.0+cu128
+--extra-index-url https://download.pytorch.org/whl/cu128
+
+streamlit
+gradio
+gradio_image_annotation
+PyMuPDF
+openai
+qwen_vl_utils
+transformers==4.51.3
+huggingface_hub
+modelscope
+flash-attn==2.8.0.post2
+accelerate
+fastapi
+python-multipart
+Pillow
+uvicorn
+pdf2image
+psutil
+GPUtil
+pynvml
+
+

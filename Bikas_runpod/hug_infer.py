@@ -9,7 +9,7 @@ from config import *
 # -----------------------------
 # Load model and processor once with EXTREME PERFORMANCE optimizations for RTX A5000
 # -----------------------------
-model_path = "./weights/DotsOCR"
+model_path = "../weights/DotsOCR" 
 
 # Load model with EXTREME PERFORMANCE optimizations for RTX A5000
 model = AutoModelForCausalLM.from_pretrained(
@@ -90,9 +90,14 @@ PROMPT = """Extract layout information from the given PDF page image(s) and retu
 CATEGORIES:
 Use layout categories only to help identify content internally, but the final JSON should include only the requested fields.
 
-TEXT FORMATTING RULES:
-- Account Number & Address: Return as plain text. Preserve the original text exactly; do not translate or alter.
-- Table: Wrap all table content in <table> ... </table> HTML. Include only semantic tags (<table>, <thead>, <tbody>, <tr>, <th>, <td>) and preserve the original text and structure.
+TEXT EXTRACTION RULES:
+- Extract **all visible text** exactly as it appears in the PDF. Do not omit, translate, or alter any characters, numbers, or formatting.
+- Account Number & Address: Return as plain text. Preserve the original text exactly.
+- Table: Wrap all table content in <table> ... </table> HTML. Include only semantic tags (<table>, <thead>, <tbody>, <tr>, <th>, <td>). Preserve **all visible text, numbers, and structure**. If a table spans multiple pages, merge them into a single table.
+
+# TEXT FORMATTING RULES:
+# - Account Number & Address: Return as plain text. Preserve the original text exactly; do not translate or alter.
+# - Table: Wrap all table content in <table> ... </table> HTML. Include only semantic tags (<table>, <thead>, <tbody>, <tr>, <th>, <td>) and preserve the original text and structure.
 
 CONSTRAINTS:
 - Omit all other fields and categories not listed above.
@@ -111,7 +116,6 @@ FINAL OUTPUT EXAMPLE:
 }
 
 Return ONLY the JSON object."""
-
 
 
 # -----------------------------

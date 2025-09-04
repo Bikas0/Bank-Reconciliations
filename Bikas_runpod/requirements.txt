@@ -23,3 +23,5 @@ pdf2image
 psutil
 GPUtil
 pynvml
+beautifulsoup4
+bs4

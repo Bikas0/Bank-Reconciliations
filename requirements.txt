@@ -1,25 +1,11 @@
-# Pinned PyTorch + CUDA 12.8
-torch==2.7.0+cu128
-torchvision==0.22.0+cu128
-torchaudio==2.7.0+cu128
---extra-index-url https://download.pytorch.org/whl/cu128
+groq==0.11.0
+langgraph==0.2.34
+langchain==0.3.1
+langchain-groq==0.2.0
+pandas==2.2.2
+python-dotenv==1.0.1
+asyncio
+typing-extensions==4.12.2
+pyppeteer
+httpx<0.28
 
-streamlit
-gradio
-gradio_image_annotation
-PyMuPDF
-openai
-qwen_vl_utils
-transformers==4.51.3
-huggingface_hub
-modelscope
-flash-attn==2.8.0.post2
-accelerate
-fastapi
-python-multipart
-Pillow
-uvicorn
-pdf2image
-psutil
-GPUtil
-pynvml

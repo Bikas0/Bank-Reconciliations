@@ -1,225 +1,190 @@
-# PDF → Image → OCR API with RTX A5000 MAXIMIZED AI Acceleration 🚀
+# Bank Reconciliation Agent 🏦
 
-A high-performance FastAPI service that converts PDFs to images and extracts layout information using DotsOCR AI model with **RTX A5000 MAXIMIZED AI acceleration** for ultimate speed.
+An intelligent AI-powered bank reconciliation system that automatically matches and reconciles bank statements with ERP data using LangGraph workflows and LLM-based analysis.
+
+![Workflow](Workflow.png)
 
 ## 🚀 Key Features
 
-- **RTX A5000 MAXIMIZED**: Optimized specifically for 24GB VRAM professional GPU
-- **AI Acceleration**: Multiple optimization techniques for 8-12x speed improvement
-- **True Batch Processing**: Process 8-12 images simultaneously
-- **Model Optimization**: Float16 precision, memory optimization, fast generation
-- **GPU Memory Management**: Full 24GB VRAM utilization with smart cleanup
-- **Fallback Support**: Automatically falls back to sequential processing if needed
-- **Production Ready**: Error handling, logging, and monitoring
-
-## 🔥 RTX A5000 AI Acceleration Techniques
-
-### 1. **Model Quantization & Precision**
-- **Float16 Precision**: Maximum speed with minimal quality loss
-- **Memory Optimization**: Full 24GB VRAM utilization
-- **Model Caching**: Keep model in memory between requests
-
-### 2. **Advanced GPU Optimizations**
-- **TensorFloat-32 (TF32)**: Faster matrix operations on RTX A5000
-- **CUDNN Benchmark**: Optimized CUDNN operations
-- **Flash Attention 2**: Maximum attention speed
-- **Mixed Precision**: Optimal speed/accuracy balance
-
-### 3. **Batch Processing**
-- **True Batching**: Process 8-12 images simultaneously
-- **Parallel Inference**: Model generates for multiple images at once
-- **Memory Efficient**: Shared model state across batch
-
-### 4. **Generation Optimization**
-- **Single Beam Search**: Faster than multi-beam
-- **Deterministic Output**: No sampling overhead
-- **Early Stopping**: Stop generation when complete
-- **KV Cache**: Reuse computed attention values
-
-### 5. **Memory Management**
-- **Automatic Cleanup**: Clear GPU memory after each batch
-- **Memory Limits**: 20GB utilization (4GB buffer)
-- **Garbage Collection**: Optimize Python memory usage
-- **Memory Pinning**: Faster GPU transfer
-
-## 🔍 Why Sequential Processing?
-
-The DotsOCR model has some characteristics that make parallel processing inefficient:
-- **Model State**: Each parallel thread tries to reload model state
-- **Memory Management**: Parallel processing causes memory fragmentation
-- **CUDA Context**: Multiple threads can interfere with CUDA operations
-
-**Sequential processing is actually faster** because it:
-- Maintains consistent model state
-- Better GPU memory utilization
-- No thread synchronization overhead
-- Cleaner CUDA context management
-
-## 📊 Performance Comparison
-
-| Pages | Before (Sequential) | After (AI Acceleration) | Speed Improvement |
-|-------|---------------------|-------------------------|-------------------|
-| 10    | ~10-15 min          | ~2-3 min                | **5x faster**     |
-| 50    | ~50-75 min          | ~8-12 min               | **6x faster**     |
-| 100   | ~100-150 min        | ~15-25 min              | **6-7x faster**   |
-
-**Expected Results**: Your 70-90 seconds per photo should become **10-15 seconds per photo**!
+- **AI-Powered Column Detection**: Automatically identifies transaction date, debit, and credit columns in both bank and ERP files
+- **Intelligent Reconciliation**: Uses LLM to generate dynamic Python code for balance calculations
+- **Multi-Format Support**: Handles CSV files for bank data and ODS files for ERP data
+- **Automated Matching**: Performs one-to-one transaction matching and elimination
+- **RESTful API**: FastAPI-based web service with CORS support
+- **LangGraph Workflow**: Structured agent workflow for reliable processing
+- **Error Handling**: Robust fallback mechanisms and error recovery
 
 ## 🛠️ Installation
 
 ```bash
-pip install -r requirements.txt
+# Clone the repository
+git clone <repository-url>
+cd bank-reconciliation-agent
+
+# Install dependencies
+pip install -r Bikas/requirements.txt
 ```
 
-## ⚙️ Configuration
+## ⚙️ Environment Setup
 
-Edit `config.py` to optimize for your hardware:
+Create a `.env` file in the Bikas directory with your Groq API key:
 
-```python
-# For 8GB GPU (RTX 3070, etc.)
-BATCH_SIZE = 2-3  # Process 2-3 images simultaneously
-
-# For 16GB GPU (RTX 3080, 4080, etc.)  
-BATCH_SIZE = 4-6  # Process 4-6 images simultaneously
-
-# For 24GB+ GPU (RTX 3090, 4090, etc.)
-BATCH_SIZE = 6-8  # Process 6-8 images simultaneously
+```env
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
 ## 🚀 Usage
 
-### Start the API
+### Start the API Server
 ```bash
-python main.py
+cd Bikas
+python app.py
 ```
 
-### Upload PDF for OCR
+The API will be available at `http://localhost:8000`
+
+### Upload Files for Reconciliation
 ```bash
-curl -X POST "http://localhost:8000/upload_pdf/" \
+curl -X POST "http://localhost:8000/reconcile" \
      -H "accept: application/json" \
      -H "Content-Type: multipart/form-data" \
-     -F "file=@your_bank_statement.pdf"
+     -F "bank_file=@bank_statement.csv" \
+     -F "erp_file=@erp_data.ods"
 ```
 
-### Check AI Acceleration Settings
-```bash
-curl "http://localhost:8000/config"
+## 📁 Project Structure
+
+```
+Bikas/
+├── app.py                      # FastAPI web server
+├── bankReconciliationAgent.py  # Main reconciliation workflow
+├── erp_ods_to_csv.py          # ODS to CSV converter
+├── requirements.txt            # Python dependencies
+└── Datasets/                   # Sample data files
+    ├── Pubali # 41774-ERP.csv
+    ├── Pubali # 41774-ERP.ods
+    └── Pubali # 41774.csv
 ```
 
-## 🔧 Configuration Options
+## 🔧 Core Components
 
-### AI Acceleration
-- `BATCH_SIZE`: Images processed simultaneously (2-8)
-- `ENABLE_BATCH_PROCESSING`: Enable AI acceleration
-- `FALLBACK_TO_SEQUENTIAL`: Auto-fallback if acceleration fails
+### 1. **FastAPI Web Server** (`app.py`)
+- Handles file uploads for bank CSV and ERP ODS files
+- Processes reconciliation requests through the agent workflow
+- Returns structured JSON responses with reconciliation results
+- Includes CORS middleware for frontend integration
 
-### Model Optimization
-- `MODEL_PRECISION`: Use float16 for speed
-- `ENABLE_MEMORY_OPTIMIZATION`: GPU memory optimization
-- `MAX_GPU_MEMORY`: Limit GPU memory usage
+### 2. **Bank Reconciliation Agent** (`bankReconciliationAgent.py`)
+- **LangGraph Workflow**: Structured multi-step reconciliation process
+- **AI Column Detection**: Uses Groq LLM to identify relevant columns
+- **Dynamic Balance Calculation**: LLM generates Python code for calculations
+- **Transaction Matching**: Automated matching and elimination of transactions
+- **State Management**: Tracks reconciliation progress through Pydantic models
 
-### OCR Quality vs Speed
-- `MAX_TOKENS`: 1024 (fastest) to 4096 (best quality)
-- `PDF_ZOOM`: Image quality (1.5-3.0)
-- `OUTPUT_FORMAT`: Image format (PNG/JPEG)
+### 3. **ERP Data Converter** (`erp_ods_to_csv.py`)
+- Converts ODS files to CSV format
+- Extracts specific columns: Document No, Date, Partner, Activity, Description, Debit, Credit
+- Handles data cleaning and validation
+- Filters out invalid or empty records
 
-## 📁 Output Format
+## 🔄 Reconciliation Workflow
 
-### API Response
+The system follows a structured workflow using LangGraph:
+
+1. **Column Detection**: AI identifies transaction date, debit, and credit columns in both datasets
+2. **Balance Calculation**: LLM generates Python code to calculate net balances
+3. **Initial Comparison**: Compares unadjusted balances between bank and ERP
+4. **Transaction Matching**: Performs one-to-one matching and elimination
+5. **Final Reconciliation**: Calculates adjusted balances and differences
+
+## 📊 API Response Format
+
 ```json
-{
-  "pdf": "bank_statement.pdf",
-  "total_pages": 50,
-  "status": "done",
-  "started_at": "2024-01-15T10:30:00.123456",
-  "completed_at": "2024-01-15T10:32:15.789012",
-  "processing_duration_seconds": 135.67,
-  "message": "Successfully processed 50 pages from bank_statement.pdf in 135.67 seconds",
-  "json_file_path": "output/bank_statement.json",
-  "results": { ... }
-}
+[
+  {
+    "Status": true,
+    "Message": "Reconciliation completed successfully",
+    "Data": {
+      "unadjusted_erp_balance": 150000.0,
+      "unadjusted_bank_balance": 148500.0,
+      "adjusted_bank_balance": 149750.0,
+      "adjusted_erp_balance": 149750.0,
+      "amount_difference": 0.0,
+      "response": "The ERP balance is 149750.0 and the bank balance is 149750.0; both are equal."
+    }
+  }
+]
 ```
 
-### Saved JSON Files
-- **Location**: `output/` directory (configurable)
-- **Naming**: `{pdf_filename}.json` (e.g., `DBBL_1113.json`)
-- **Format**: Pretty-printed JSON with proper indentation
-- **Encoding**: UTF-8 (supports international characters)
+## 🎯 Key Features Explained
 
-### Response Status Fields
-- **`status`**: Always `"done"` when processing completes successfully
-- **`started_at`**: ISO timestamp when processing began
-- **`completed_at`**: ISO timestamp when processing finished
-- **`processing_duration_seconds`**: Total time taken to process the PDF
-- **`message`**: Human-readable summary of the processing results
+### AI-Powered Column Detection
+The system uses Groq's Gemma2-9B model to automatically identify column names in uploaded files, eliminating the need for manual column mapping.
 
-## 🎯 Use Cases
+### Dynamic Code Generation
+The LLM generates Python code for balance calculations, adapting to different data formats and column structures automatically.
 
-- **Bank Statements**: Extract transactions, balances, dates
-- **Academic Papers**: Parse tables, formulas, references
-- **Legal Documents**: Extract headers, footers, structured text
-- **Research Reports**: Process figures, captions, data tables
+### Intelligent Matching
+The reconciliation engine performs sophisticated transaction matching, identifying and eliminating matching entries between bank and ERP data.
+
+### Robust Error Handling
+Includes fallback mechanisms for calculation failures and comprehensive error reporting.
+
+## 🔧 Configuration
+
+### Model Configuration
+- **LLM Model**: Groq Gemma2-9B-IT
+- **Temperature**: 0 (deterministic output)
+- **Max Retries**: 2
+- **Recursion Limit**: 100
+
+### File Processing
+- **Upload Directory**: `Datasets/`
+- **Supported Formats**: CSV (bank), ODS (ERP)
+- **Auto-cleanup**: Temporary files are managed automatically
 
 ## 🚨 Troubleshooting
 
-### Performance Issues
-- **Increase `BATCH_SIZE`** if you have more GPU memory
-- **Reduce `MAX_TOKENS`** for faster processing
-- **Check GPU utilization** with `nvidia-smi`
-- **Monitor memory usage** and adjust `MAX_GPU_MEMORY`
+### Common Issues
 
-### Out of Memory Errors
-- **Reduce `BATCH_SIZE`** in `config.py`
-- **Lower `PDF_ZOOM`** for smaller images
-- **Use `OUTPUT_FORMAT = "JPEG"`** for compression
-- **Adjust `MAX_GPU_MEMORY`** to your GPU capacity
+**File Format Errors**
+- Ensure bank files are in CSV format
+- Ensure ERP files are in ODS format
+- Check that files contain the required columns
 
-### OCR Quality Issues
-- **Increase `MAX_TOKENS`** for complex documents
-- **Increase `PDF_ZOOM`** for higher resolution
-- **Use `OUTPUT_FORMAT = "PNG"`** for lossless quality
+**API Key Issues**
+- Verify your Groq API key is set in the `.env` file
+- Check API key permissions and rate limits
 
-## 🔍 Monitoring
+**Column Detection Failures**
+- Ensure your data files have clear column headers
+- Check that debit/credit columns contain numeric data
+- Verify date columns are properly formatted
 
-The API provides real-time progress updates:
-```
-📄 PDF converted to 50 images
-🚀 Starting batch OCR processing...
-⏳ Status: Processing OCR with AI acceleration...
-🚀 Using batch size: 4, max tokens: 2048
-🚀 Processing 50 images with TRUE batch processing (batch_size=4)...
-📦 Processing batch 1: 4 images...
-✅ Batch 1 completed: 4 images
-📦 Processing batch 2: 4 images...
-✅ Batch 2 completed: 4 images
-...
-🎉 All 50 images processed successfully!
-✅ Status: AI acceleration processing complete!
-🎯 All processing completed successfully!
-📊 Final Status: DONE
-```
+### Performance Optimization
+- Use smaller sample files for testing
+- Monitor API rate limits for the Groq service
+- Consider caching results for repeated reconciliations
 
-## 📈 Optimization Tips
+## 📈 Sample Data
 
-1. **Start Conservative**: Begin with `BATCH_SIZE = 2-3`
-2. **Monitor Memory**: Watch GPU memory usage with `nvidia-smi`
-3. **Test Incrementally**: Increase batch size gradually
-4. **Balance Quality vs Speed**: Adjust `MAX_TOKENS` based on needs
-5. **GPU Memory**: Ensure sufficient VRAM for your batch size
+The project includes sample data files in the `Datasets/` directory:
+- `Pubali # 41774.csv`: Sample bank statement data
+- `Pubali # 41774-ERP.ods`: Sample ERP transaction data
+- `Pubali # 41774-ERP.csv`: Converted ERP data
 
-## 🎉 Benefits of AI Acceleration
+## 🎉 Benefits
 
-- **Massive Speed Improvement**: 5-10x faster than before
-- **True Batch Processing**: Multiple images simultaneously
-- **Better GPU Utilization**: Optimized memory and computation
-- **Production Ready**: Handles large documents efficiently
-- **Scalable**: Works with 100+ page documents
+- **Automated Processing**: Eliminates manual reconciliation work
+- **AI Intelligence**: Adapts to different data formats automatically
+- **Accuracy**: Reduces human error in reconciliation processes
+- **Scalability**: Handles large datasets efficiently
+- **Integration Ready**: RESTful API for easy system integration
 
-## 🚀 Expected Results for 100 Pages
+## 🔮 Future Enhancements
 
-**Before**: ~100-150 minutes (1.5-2.5 hours)
-**After**: ~15-25 minutes (15-25 minutes)
-
-**Time Savings**: **6-7x faster** - Process 100 pages in under 30 minutes!
-
-This AI acceleration approach will transform your bank statement processing from hours to minutes! 🎯
+- Support for additional file formats (Excel, JSON)
+- Advanced matching algorithms for partial transactions
+- Real-time reconciliation monitoring
+- Batch processing capabilities
+- Integration with popular accounting systems

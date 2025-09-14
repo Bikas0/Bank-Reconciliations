@@ -18,8 +18,8 @@ An intelligent AI-powered bank reconciliation system that automatically matches 
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd bank-reconciliation-agent
+git clone https://github.com/Bikas0/Bank-Reconciliations.git
+cd Bank-Reconciliations
 
 # Install dependencies
 pip install -r Bikas/requirements.txt
@@ -55,15 +55,20 @@ curl -X POST "http://localhost:8000/reconcile" \
 ## 📁 Project Structure
 
 ```
-Bikas/
-├── app.py                      # FastAPI web server
-├── bankReconciliationAgent.py  # Main reconciliation workflow
-├── erp_ods_to_csv.py          # ODS to CSV converter
-├── requirements.txt            # Python dependencies
-└── Datasets/                   # Sample data files
-    ├── Pubali # 41774-ERP.csv
-    ├── Pubali # 41774-ERP.ods
-    └── Pubali # 41774.csv
+.
+├── Bikas
+│   ├── app.py                     # FastAPI web server
+│   ├── bankReconciliationAgent.py # Main reconciliation workflow
+│   ├── Datasets                   # Sample data files
+│   │   ├── Pubali # 41774.csv
+│   │   ├── Pubali # 41774-ERP.csv
+│   │   └── Pubali # 41774-ERP.ods
+│   ├── erp_ods_to_csv.py          # ODS to CSV converter
+│   └── requirements.txt           # Python dependencies
+├── LICENSE
+├── main.ipynb
+├── README.md
+└── Workflow.png
 ```
 
 ## 🔧 Core Components
